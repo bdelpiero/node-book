@@ -1,0 +1,1 @@
+type CPSCallBack = (err: Error | null, res: any) => void 

@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 
-const ticker = (numMilliseconds, cb) => {
+const ticker = (numMilliseconds: number, cb: CPSCallBack) => {
     const emitter = new EventEmitter();
 
     const recur = (timeLeft = numMilliseconds, ticks = 0) => {
@@ -22,7 +22,7 @@ const ticker = (numMilliseconds, cb) => {
         }
 
         setTimeout(() => {
-            emitter, emitter.emit("tick");
+            emitter.emit("tick");
             recur(timeLeft - 50, ticks + 1 );
         }, 50);
     };

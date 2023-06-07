@@ -1,5 +1,5 @@
 {
-  "name": "10-eventemitter-extend",
+  "name": "node-book",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,5 +10,9 @@
   "engines": {
     "node": ">=14"
   },
-  "engineStrict": true
+  "engineStrict": true,
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "typescript": "^5.1.3"
+  }
 }
