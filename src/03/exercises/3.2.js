@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 
-const ticker = (numMilliseconds: number, cb: CPSCallBack) => {
+const ticker = (numMilliseconds, cb) => {
     const emitter = new EventEmitter();
 
     const recur = (timeLeft = numMilliseconds, ticks = 0) => {

@@ -2,16 +2,13 @@ import { EventEmitter } from "events";
 import { readFile } from "fs";
 
 class FindRegex extends EventEmitter {
-    regex: RegExp;
-    files: string[];
-
-    constructor(regex: RegExp) {
+    constructor(regex) {
         super();
         this.regex = regex;
         this.files = [];
     }
 
-    addFile(file: string) {
+    addFile(file) {
         this.files.push(file);
         return this;
     }
