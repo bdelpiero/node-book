@@ -1,48 +1,60 @@
-import fs from "fs"
-import path from "path"
+import fs from "fs";
+import path from "path";
 
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const containingFiles = [];
-let processing = 0
 
 export function recursiveFind(dir, word, cb) {
-    // processing++
-    fs.readdir(dir, (err, files) => {
-        if(err) {
-            return cb(err)  
-        }
-        files.forEach(file => {
-            processing++
-            fs.readFile(path.join(dir, file), (err, data) => {
-
-                if(err) {
-                    return cb(err)
+    const containingFiles = [];
+    let processing = 0;
+    
+    function findInFile(file, word, cb) {
+        processing++;
+        fs.readFile(file, (err, data) => {
+            if (err) {
+                return cb(err);
+            }
+            
+            if (data.includes(word)) {
+                containingFiles.push(path.basename(file));
+            }
+            
+            if (--processing === 0) {
+                return cb(null, containingFiles);
+            }
+        });
+    }
+    
+    function recur(dir) {
+        processing++;
+        fs.readdir(dir, { withFileTypes: true }, (err, files) => {
+            if (err) {
+                return cb(err);
+            }
+            files.forEach(file => {
+                if (file.isDirectory()) {
+                    recur(path.resolve(dir, file.name), word, cb);
+                } else {
+                    findInFile(path.resolve(dir, file.name), word, cb);
                 }
+            });
 
-                if (data.includes(word)) {
-                    containingFiles.push(file)
-                }
-
-                if(--processing === 0) {
-                    return cb(null, containingFiles)
-                }
-            })
-        })
-
-        // if (--processing === 0) {
-        //     return cb(null, containingFiles)
-        // }
-    })
-}
-
-const test = path.resolve(__dirname, 'find')
-recursiveFind(test, 'asd', (err, files) => {
-    if (err) {
-        console.error(err)  
+            if (--processing === 0) {
+                return cb(null, containingFiles);
+            }
+        });
     }
 
-    console.log(files)
-})
+    recur(dir);
+}
+
+const test = path.resolve(__dirname, "find");
+recursiveFind(test, "asd", (err, files) => {
+    if (err) {
+        console.error(err);
+    }
+
+    console.log(files);
+});
