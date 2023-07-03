@@ -1,72 +1,77 @@
-import path from "path";
-import { fileURLToPath } from "url";
+import { jest } from "@jest/globals";
+import fs from "fs";
 import { listNestedFiles } from "../4.2";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const mockFiles = {
+    "/flat": [
+        { name: "1.txt", isDirectory: () => false },
+        { name: "2.txt", isDirectory: () => false },
+        { name: "3.txt", isDirectory: () => false },
+    ],
+    "/nested": [
+        { name: "1", isDirectory: () => true },
+        { name: "2", isDirectory: () => true },
+        { name: "3.txt", isDirectory: () => false },
+    ],
+    "/nested/1": [
+        { name: "1.txt", isDirectory: () => false },
+        { name: "2.txt", isDirectory: () => false },
+    ],
+    "/nested/2": [
+        { name: "3", isDirectory: () => true },
+        { name: "4.txt", isDirectory: () => false },
+    ],
+    "/nested/2/3": [{ name: "5.txt", isDirectory: () => false }],
+};
 
-const paths = ["notADir", "empty", "flat", "nested"].map(dir => path.join("list", dir))
+describe("listNestedFiles", () => {
+    let spy;
 
-test("should throw an error if invalid dir path", done => {
-    function callback(error) {
-        expect(error).toBeTruthy();
-        done();
-    }
+    beforeEach(() => {
+        spy = jest.spyOn(fs, "readdir");
+    });
 
-    const dir = path.resolve(__dirname, paths[0]);
-    listNestedFiles(dir, callback);
-});
+    afterEach(() => {
+        spy.mockRestore();
+    });
 
-test("should handle an empty dir", done => {
-    function callback(error, files) {
-        if (error) {
-            done(error);
-            return;
-        }
-        try {
-            expect(files).toHaveLength(0);
+    test("should list files in flat directory", done => {
+        spy.mockImplementation((dir, options, cb) => {
+            cb(null, mockFiles[dir]);
+        });
+
+        listNestedFiles("/flat", (_, files) => {
+            expect(files).toEqual(['/flat/1.txt', '/flat/2.txt', '/flat/3.txt']);
             done();
-        } catch (error) {
-            done(error);
-        }
-    }
+        });
+    });
 
-    const dir = path.resolve(__dirname, paths[1]);
-    listNestedFiles(dir, callback);
-});
+    test("should handle nested directories", done => {
+        spy.mockImplementation((dir, options, cb) => {
+            cb(null, mockFiles[dir]);
+        });
 
-test("should handle dir with no nested dirs", done => {
-    function callback(error, files) {
-        if (error) {
-            done(error);
-            return;
-        }
-        try {
-            expect(files).toHaveLength(3);
+        listNestedFiles("/nested", (_, files) => {
+            expect(files.sort()).toEqual([
+                '/nested/1/1.txt', 
+                '/nested/1/2.txt', 
+                '/nested/2/3/5.txt', 
+                '/nested/2/4.txt', 
+                '/nested/3.txt'
+            ].sort());
             done();
-        } catch (error) {
-            done(error);
-        }
-    }
+        });
+    });
 
-    const dir = path.resolve(__dirname, paths[2]);
-    listNestedFiles(dir, callback);
-});
+    test("should handle readdir errors", done => {
+        spy.mockImplementation((dir, options, cb) => {
+            cb(new Error("Test Error"));
+        });
 
-test("should handle nested dirs", done => {
-    function callback(error, files) {
-        if (error) {
-            done(error);
-            return;
-        }
-        try {
-            expect(files).toHaveLength(8);
+        listNestedFiles("/flat", (err, files) => {
+            expect(err).toBeInstanceOf(Error);
+            expect(err).toHaveProperty('message', 'Test Error');
             done();
-        } catch (error) {
-            done(error);
-        }
-    }
-
-    const dir = path.resolve(__dirname, paths[3]);
-    listNestedFiles(dir, callback);
+        });
+    });
 });

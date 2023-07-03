@@ -12,10 +12,10 @@ export function recursiveFind(dir, word, cb) {
                 return cb(err);
             }
             
-            if (data.includes(word)) {
+            if (data && data.includes(word)) {
                 containingFiles.push(path.basename(file));
             }
-            
+
             if (--processing === 0) {
                 return cb(null, containingFiles);
             }
@@ -28,13 +28,15 @@ export function recursiveFind(dir, word, cb) {
             if (err) {
                 return cb(err);
             }
-            files.forEach(file => {
-                if (file.isDirectory()) {
-                    recur(path.resolve(dir, file.name), word, cb);
-                } else {
-                    findInFile(path.resolve(dir, file.name), word, cb);
-                }
-            });
+            if (files) {
+                files.forEach(file => {
+                    if (file.isDirectory()) {
+                        recur(path.resolve(dir, file.name), word, cb);
+                    } else {
+                        findInFile(path.resolve(dir, file.name), word, cb);
+                    }
+                });
+            }
 
             if (--processing === 0) {
                 return cb(null, containingFiles);
