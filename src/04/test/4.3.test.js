@@ -1,7 +1,7 @@
 import path from "path";
 
 import { fileURLToPath } from "url";
-import { recursiveFind } from "../4.3";
+import { recursiveFind } from "../exercises/4.3";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
