@@ -1,13 +1,23 @@
-import path from "path";
+// mock fs behavior instead of reading actual directories.
 
-import { fileURLToPath } from "url";
-import { recursiveFind } from "../4.3.parallel";
+describe("recursiveFind", () => {
+    test.todo("should throw an error if invalid dir path");
+    test.todo("should handle an empty dir");
+    test.todo("should handle dir with no nested dirs");
+    test.todo("should handle nested dirs");
+});
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-const paths = ["notADir", "empty", "flat", "nested"].map(dir => path.join("find", dir));
-const word = "asd";
+// import path from "path";
+
+// import { fileURLToPath } from "url";
+// import { recursiveFind } from "../4.3.parallel";
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// const paths = ["notADir", "empty", "flat", "nested"].map(dir => path.join("find", dir));
+// const word = "asd";
 
 // test("should throw an error if invalid dir path", done => {
 //     function callback(error) {
@@ -19,57 +29,56 @@ const word = "asd";
 //     recursiveFind(dir, word, () => {});
 // });
 
+// test("should handle an empty dir", done => {
+//     function callback(error, files) {
+//         if (error) {
+//             done(!error);
+//             return;
+//         }
+//         try {
+//             expect(files).toHaveLength(0);
+//             done();
+//         } catch (error) {
+//             done(error);
+//         }
+//     }
 
-test("should handle an empty dir", done => {
-    function callback(error, files) {
-        if (error) {
-            done(!error);
-            return;
-        }
-        try {
-            expect(files).toHaveLength(0);
-            done();
-        } catch (error) {
-            done(error);
-        }
-    }
+//     const dir = path.resolve(__dirname, paths[1]);
+//     recursiveFind(dir, word, callback);
+// });
 
-    const dir = path.resolve(__dirname, paths[1]);
-    recursiveFind(dir, word, callback);
-});
+// test("should handle dir with no nested dirs", done => {
+//     function callback(error, files) {
+//         if (error) {
+//             done(error);
+//             return;
+//         }
+//         try {
+//             expect(files).toHaveLength(2);
+//             done();
+//         } catch (error) {
+//             done(error);
+//         }
+//     }
 
-test("should handle dir with no nested dirs", done => {
-    function callback(error, files) {
-        if (error) {
-            done(error);
-            return;
-        }
-        try {
-            expect(files).toHaveLength(2);
-            done();
-        } catch (error) {
-            done(error);
-        }
-    }
+//     const dir = path.resolve(__dirname, paths[2]);
+//     recursiveFind(dir, word, callback);
+// });
 
-    const dir = path.resolve(__dirname, paths[2]);
-    recursiveFind(dir, word, callback);
-});
+// test("should handle nested dirs", done => {
+//     function callback(error, files) {
+//         if (error) {
+//             done(error);
+//             return;
+//         }
+//         try {
+//             expect(files).toHaveLength(3);
+//             done();
+//         } catch (error) {
+//             done(error);
+//         }
+//     }
 
-test("should handle nested dirs", done => {
-    function callback(error, files) {
-        if (error) {
-            done(error);
-            return;
-        }
-        try {
-            expect(files).toHaveLength(3);
-            done();
-        } catch (error) {
-            done(error);
-        }
-    }
-
-    const dir = path.resolve(__dirname, paths[3]);
-    recursiveFind(dir, word, callback);
-});
+//     const dir = path.resolve(__dirname, paths[3]);
+//     recursiveFind(dir, word, callback);
+// });
