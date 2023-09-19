@@ -1,2 +1,4 @@
 node_modules
 empty_files
+*.txt
+*.txt.gz
