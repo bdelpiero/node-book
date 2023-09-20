@@ -1,37 +1,96 @@
-//Write a command-line script that takes a file as input and compresses it
-// using the different algorithms available in the zlib module (Brotli, Deflate, Gzip).
-// You want to produce a summary table that compares the algorithm's compression time and compression efficiency on the given file.
-// Hint: This could be a good use case for the fork pattern, but remember that we made some important performance considerations when we discussed it earlier in this chapter.
-
-import { createReadStream, createWriteStream } from "fs";
+import { createReadStream } from "fs";
 import { createBrotliCompress, createDeflate, createGzip } from "zlib";
-import { dirname, join, parse } from "path";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { trackPerformance } from "./trackPerformance.js";
+import { pipeline, PassThrough } from "stream";
+import { hrtime } from "process";
 
-const FILE_EXTENSION = {
-    ["GZIP"]: "gz",
-    ["Deflate"]: "zz",
-    ["Brotli"]: "br",
+let compressing = 0;
+const stats = {
+    input: {},
+    gzip: {},
+    brotli: {},
+    deflate: {},
 };
 
-const file = process.argv[2];
-const filename = parse(file).name;
-const currentDir = dirname(fileURLToPath(import.meta.url));
-const outDir = join(currentDir, "output_files");
-const inputDir = join(currentDir, "input_files");
-const inputFile = join(inputDir, file);
-
-const inputStream = createReadStream(inputFile);
-
-function compress(algo, compressFn) {
-    const outFile = join(outDir, `${filename}.${FILE_EXTENSION[algo]}`);
-    return inputStream
-        .pipe(compressFn())
-        .pipe(trackPerformance(algo))
-        .pipe(createWriteStream(outFile));
+function startTimer(key) {
+    const stream = new PassThrough();
+    stream.once("data", () => {
+        compressing++;
+        stats[key].startTimestamp = hrtime.bigint();
+    });
+    return stream;
 }
 
-compress("GZIP", createGzip);
-compress("Deflate", createDeflate);
-compress("Brotli", createBrotliCompress);
+function endTimer(key) {
+    const stream = new PassThrough();
+    stream.on("end", () => {
+        const endTime = hrtime.bigint();
+        const startTime = stats[key].startTimestamp;
+        stats[key].compressionTime = endTime - startTime;
+    });
+    return stream;
+}
+
+function monitorSize(key) {
+    const tracker = new PassThrough();
+
+    let size = 0;
+
+    tracker.on("data", chunk => {
+        size += chunk.length;
+    });
+
+    tracker.on("finish", () => {
+        stats[key].size = size;
+    });
+
+    return tracker;
+}
+
+function done(err) {
+    if (err) {
+        console.error(err);
+        process.exit(1);
+    }
+
+    if (--compressing === 0) {
+        const results = [];
+
+        console.log(`Size of input file before compression: ${stats.input.size}`);
+        delete stats.input;
+
+        for (const algorithm of Object.keys(stats)) {
+            const { compressionTime, size } = stats[algorithm];
+            results.push({ algorithm, compressionTime, size });
+        }
+
+        console.table(results);
+    }
+}
+
+function compress(algo, compressFn, inputStream) {
+    pipeline(
+        inputStream,
+        monitorSize("input"),
+        startTimer(algo),
+        compressFn(),
+        endTimer(algo),
+        monitorSize(algo),
+        done
+    );
+}
+
+function main() {
+    const file = process.argv[2];
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const inputDir = join(currentDir, "input_files");
+    const inputFile = join(inputDir, file);
+    const inputStream = createReadStream(inputFile);
+
+    compress("gzip", createGzip, inputStream);
+    compress("deflate", createDeflate, inputStream);
+    compress("brotli", createBrotliCompress, inputStream);
+}
+
+main();
