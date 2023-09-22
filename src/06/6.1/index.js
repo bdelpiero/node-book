@@ -66,6 +66,7 @@ function done(err) {
         }
 
         console.table(results);
+        process.exit(0)
     }
 }
 
@@ -81,10 +82,17 @@ function compress(algo, compressFn, inputStream) {
     );
 }
 
+// accept optional argument to create output file
 function main() {
     const file = process.argv[2];
+
+    if (!file) {
+        console.log('No file was provided as argument');
+        process.exit(1);
+    }
+
     const currentDir = dirname(fileURLToPath(import.meta.url));
-    const inputDir = join(currentDir, "input_files");
+    const inputDir = join(currentDir, "../input_files");
     const inputFile = join(inputDir, file);
     const inputStream = createReadStream(inputFile);
 

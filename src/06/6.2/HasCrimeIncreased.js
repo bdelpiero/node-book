@@ -8,7 +8,7 @@ export class HasCrimeIncreased extends Transform {
     }
 
     // push isn't called, so no data is emitted while accumulating totals
-    _transform({year, value}, _, cb) {
+    _transform({ year, value }, _, cb) {
         const crimes = Number(value);
         this.yearlyTotals[year] = this.yearlyTotals[year] || 0;
         this.yearlyTotals[year] += crimes;
@@ -33,7 +33,7 @@ export class HasCrimeIncreased extends Transform {
                   )}%`
                 : "Crime has remained the same";
 
-        this.push(result + "\n");
+        console.log(result);
         cb();
     }
 }
