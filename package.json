@@ -6,7 +6,10 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "csv-parse": "^5.5.0",
+    "unzipper": "^0.10.14"
+  },
   "engines": {
     "node": ">=14"
   },
