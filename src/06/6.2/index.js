@@ -4,23 +4,25 @@ import { pipeline } from "stream";
 import { fileURLToPath } from "url";
 import { parse } from "csv-parse";
 import pumpify from "pumpify";
-import { HasCrimeIncreased } from "./HasCrimeIncreased.js";
-import { MostDangerous } from "./MostDangerous.js";
-import { MostCommonCrimePerArea } from "./MostCommonCrimePerArea.js";
+import { hasCrimeIncreased } from "./hasCrimeIncreased.js";
+import { leastCommonCrime } from "./leastCommonCrime.js";
+import { mostCommonCrimePerArea } from "./MostCommonCrimePerArea.js";
+import { mostDangerousArea } from "./mostDangerousArea.js";
+
+// file can be downloaded from: https://www.kaggle.com/datasets/jboysen/london-crime?resource=download&select=london_crime_by_lsoa.csv
+const file = join(inputDir, "london_crime_by_lsoa.csv");
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const inputDir = join(currentDir, "../input_files");
-// file can be downloaded from: https://www.kaggle.com/datasets/jboysen/london-crime?resource=download&select=london_crime_by_lsoa.csv
-const file = join(inputDir, "london_crime_by_lsoa.csv");
-// const file = join(inputDir, "small_sample.csv");
 
 const inputStream = createReadStream(file);
 const csvParser = parse({ columns: true });
 const mainStream = pumpify.obj(inputStream, csvParser);
 
-// these transform streams could be replaced with pass through ones, as im not interested on their writeable side
-[HasCrimeIncreased, MostDangerous, MostCommonCrimePerArea].forEach(Stream => {
-    pipeline(mainStream, new Stream(), err => {
+const analyzers = [hasCrimeIncreased, mostDangerousArea, mostCommonCrimePerArea, leastCommonCrime];
+
+analyzers.forEach(analyze => {
+    pipeline(mainStream, analyze(), err => {
         if (err) {
             console.error("error parsing file: ", err);
             process.exit(1);

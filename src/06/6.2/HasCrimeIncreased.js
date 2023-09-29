@@ -1,39 +1,29 @@
-import { Transform } from "stream";
+import { PassThrough } from "stream";
 
-export class HasCrimeIncreased extends Transform {
-    constructor(options = {}) {
-        options.objectMode = true;
-        super(options);
-        this.yearlyTotals = {};
-    }
+export function hasCrimeIncreased() {
+    const stream = new PassThrough({ objectMode: true });
 
-    // push isn't called, so no data is emitted while accumulating totals
-    _transform({ year, value }, _, cb) {
-        const crimes = Number(value);
-        this.yearlyTotals[year] = this.yearlyTotals[year] || 0;
-        this.yearlyTotals[year] += crimes;
-        cb();
-    }
+    const yearlyTotals = {};
 
-    // will be called when all data has been processed
-    _flush(cb) {
-        const years = Object.keys(this.yearlyTotals).sort();
-        const firstYearTotal = this.yearlyTotals[years[0]];
-        const lastYearTotal = this.yearlyTotals[years[years.length - 1]];
-        const percentageChange =
-            ((lastYearTotal - firstYearTotal) / firstYearTotal) * 100;
+    stream.on("data", ({ year, value }) => {
+        yearlyTotals[year] = yearlyTotals[year] || 0;
+        yearlyTotals[year] += Number(value);
+    });
+
+    stream.on("end", () => {
+        const years = Object.keys(yearlyTotals).sort();
+        const firstYearTotal = yearlyTotals[years[0]];
+        const lastYearTotal = yearlyTotals[years[years.length - 1]];
+        const percentageChange = ((lastYearTotal - firstYearTotal) / firstYearTotal) * 100;
         const result =
             lastYearTotal < firstYearTotal
-                ? `Crime has decreased by ${Math.abs(percentageChange).toFixed(
-                      2
-                  )}%`
+                ? `Crime has decreased by ${Math.abs(percentageChange).toFixed(2)}%`
                 : firstYearTotal < lastYearTotal
-                ? `Crime has increased by ${Math.abs(percentageChange).toFixed(
-                      2
-                  )}%`
+                ? `Crime has increased by ${Math.abs(percentageChange).toFixed(2)}%`
                 : "Crime has remained the same";
 
         console.log(result);
-        cb();
-    }
+    });
+
+    return stream;
 }

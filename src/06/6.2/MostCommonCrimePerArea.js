@@ -1,43 +1,38 @@
-import { Transform } from "stream";
+import { PassThrough } from "stream";
 
+export function mostCommonCrimePerArea() {
+    const stream = new PassThrough({ objectMode: true });
 
-export class MostCommonCrimePerArea extends Transform {
-    constructor(options = {}) {
-        options.objectMode = true;
-        super(options);
-        this.boroughTotalsPerCategory = {};
-    }
+    const boroughTotalsPerCategory = {};
 
-    _transform({borough, major_category, value}, _, cb) {
+    stream.on("data", ({ borough, major_category, value }) => {
         const crimes = Number(value);
 
-        if (!this.boroughTotalsPerCategory[borough]) {
-            this.boroughTotalsPerCategory[borough] = { [ major_category ] : crimes };
-        } else if (!this.boroughTotalsPerCategory[borough][major_category]) {
-            this.boroughTotalsPerCategory[borough][major_category] = crimes;
+        if (!boroughTotalsPerCategory[borough]) {
+            boroughTotalsPerCategory[borough] = { [major_category]: crimes };
+        } else if (!boroughTotalsPerCategory[borough][major_category]) {
+            boroughTotalsPerCategory[borough][major_category] = crimes;
         } else {
-            this.boroughTotalsPerCategory[borough][major_category] += crimes;            
+            boroughTotalsPerCategory[borough][major_category] += crimes;
         }
+    });
 
-        cb()
-    }
+    stream.on("end", () => {
+        const boroughs = Object.keys(boroughTotalsPerCategory);
 
-    _flush(cb) {
-        const boroughs = Object.keys(this.boroughTotalsPerCategory);
-        
         const mostCommonCrimePerBorough = boroughs.map(borough => {
-            const boroughTotalsPerCategory = this.boroughTotalsPerCategory[borough];
-            const categories = Object.keys(boroughTotalsPerCategory);
+            const boroughTotals = boroughTotalsPerCategory[borough];
+            const categories = Object.keys(boroughTotals);
 
             const mostCommonCategory = categories.reduce((mostCommon, category) => {
-                return boroughTotalsPerCategory[category] > boroughTotalsPerCategory[mostCommon] ? category : mostCommon;
+                return boroughTotals[category] > boroughTotals[mostCommon] ? category : mostCommon;
             }, categories[0]);
 
-            return { borough, mostCommonCategory}
-        })
+            return { borough, mostCommonCategory };
+        });
 
-        console.table(mostCommonCrimePerBorough)
+        console.table(mostCommonCrimePerBorough);
+    });
 
-        cb()
-    }
+    return stream;
 }
