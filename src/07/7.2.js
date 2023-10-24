@@ -58,7 +58,7 @@ class RequestBuilder {
 }
 
 function main() {
-    new RequestBuilder()
+    const request = new RequestBuilder()
         .setURL("https://jsonplaceholder.typicode.com/posts")
         .setMethod("post")
         .setHeaders({
@@ -68,9 +68,11 @@ function main() {
             title: "foo",
             body: "bar",
             userId: 1,
-        })
+        });
+
+    request
         .invoke()
-        .then(res => console.log(res))
+        .then(console.log)
         .catch(console.error);
 }
 
