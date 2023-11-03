@@ -13,16 +13,18 @@ export function createFSAdapter() {
                 options = { encoding: options };
             }
 
-            const content = map.get(resolve(filename));
-            if (!content) {
-                const err = new Error(`ENOENT, open "${filename}"`);
-                err.code = "ENOENT";
-                err.errno = 34;
-                err.path = filename;
-                return callback && callback(err);
-            }
+            process.nextTick(() => {
+                const content = map.get(resolve(filename));
+                if (!content) {
+                    const err = new Error(`ENOENT, open "${filename}"`);
+                    err.code = "ENOENT";
+                    err.errno = 34;
+                    err.path = filename;
+                    return callback && callback(err);
+                }
 
-            callback(null, content.toString(options.encoding));
+                return callback && callback(null, content.toString(options.encoding));
+            });
         },
 
         // TODO should write to the in memory object
@@ -35,12 +37,14 @@ export function createFSAdapter() {
                 options = { encoding: options };
             }
 
-            try {
-                map.set(resolve(filename), Buffer.from(contents, options.encoding));
-                callback();
-            } catch (e) {
-                callback(e);
-            }
+            process.nextTick(() => {
+                try {
+                    map.set(resolve(filename), Buffer.from(contents, options.encoding));
+                    return callback && callback();
+                } catch (e) {
+                    return callback && callback(e);
+                }
+            });
         },
     };
 }

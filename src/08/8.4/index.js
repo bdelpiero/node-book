@@ -2,7 +2,11 @@ import { createFSAdapter } from "./fs-adapter.js";
 
 const fs = createFSAdapter();
 
-fs.writeFile("file.txt", "Hello!", () => {
+fs.writeFile("file.txt", "Hello!", err => {
+    if (err) {
+        console.error(err);
+        return;
+    }
     fs.readFile("file.txt", { encoding: "utf8" }, (err, res) => {
         if (err) {
             return console.error(err);
