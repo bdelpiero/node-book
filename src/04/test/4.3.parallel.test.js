@@ -1,12 +1,11 @@
 // mock fs behavior instead of reading actual directories.
 
 describe("recursiveFind", () => {
-    test.todo("should throw an error if invalid dir path");
-    test.todo("should handle an empty dir");
-    test.todo("should handle dir with no nested dirs");
-    test.todo("should handle nested dirs");
+  test.todo("should throw an error if invalid dir path");
+  test.todo("should handle an empty dir");
+  test.todo("should handle dir with no nested dirs");
+  test.todo("should handle nested dirs");
 });
-
 
 // import path from "path";
 

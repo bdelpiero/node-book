@@ -19,15 +19,20 @@ const inputStream = createReadStream(file);
 const csvParser = parse({ columns: true });
 const mainStream = pumpify.obj(inputStream, csvParser);
 
-const analyzers = [hasCrimeIncreased, mostDangerousArea, mostCommonCrimePerArea, leastCommonCrime];
+const analyzers = [
+  hasCrimeIncreased,
+  mostDangerousArea,
+  mostCommonCrimePerArea,
+  leastCommonCrime,
+];
 
-analyzers.forEach(analyze => {
-    pipeline(mainStream, analyze(), err => {
-        if (err) {
-            console.error("error parsing file: ", err);
-            process.exit(1);
-        }
-        console.log("done reading file");
-        process.exit(0);
-    });
+analyzers.forEach((analyze) => {
+  pipeline(mainStream, analyze(), (err) => {
+    if (err) {
+      console.error("error parsing file: ", err);
+      process.exit(1);
+    }
+    console.log("done reading file");
+    process.exit(0);
+  });
 });

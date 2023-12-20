@@ -7,98 +7,98 @@ import { hrtime } from "process";
 
 let compressing = 0;
 const stats = {
-    input: {},
-    gzip: {},
-    brotli: {},
-    deflate: {},
+  input: {},
+  gzip: {},
+  brotli: {},
+  deflate: {},
 };
 
 function startTimer(key) {
-    const stream = new PassThrough();
-    stream.once("data", () => {
-        compressing++;
-        stats[key].startTimestamp = hrtime.bigint();
-    });
-    return stream;
+  const stream = new PassThrough();
+  stream.once("data", () => {
+    compressing++;
+    stats[key].startTimestamp = hrtime.bigint();
+  });
+  return stream;
 }
 
 function endTimer(key) {
-    const stream = new PassThrough();
-    stream.on("end", () => {
-        const endTime = hrtime.bigint();
-        const startTime = stats[key].startTimestamp;
-        stats[key].compressionTime = endTime - startTime;
-    });
-    return stream;
+  const stream = new PassThrough();
+  stream.on("end", () => {
+    const endTime = hrtime.bigint();
+    const startTime = stats[key].startTimestamp;
+    stats[key].compressionTime = endTime - startTime;
+  });
+  return stream;
 }
 
 function monitorSize(key) {
-    const tracker = new PassThrough();
+  const tracker = new PassThrough();
 
-    let size = 0;
+  let size = 0;
 
-    tracker.on("data", chunk => {
-        size += chunk.length;
-    });
+  tracker.on("data", (chunk) => {
+    size += chunk.length;
+  });
 
-    tracker.on("finish", () => {
-        stats[key].size = size;
-    });
+  tracker.on("finish", () => {
+    stats[key].size = size;
+  });
 
-    return tracker;
+  return tracker;
 }
 
 function done(err) {
-    if (err) {
-        console.error(err);
-        process.exit(1);
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+
+  if (--compressing === 0) {
+    const results = [];
+
+    console.log(`Size of input file before compression: ${stats.input.size}`);
+    delete stats.input;
+
+    for (const algorithm of Object.keys(stats)) {
+      const { compressionTime, size } = stats[algorithm];
+      results.push({ algorithm, compressionTime, size });
     }
 
-    if (--compressing === 0) {
-        const results = [];
-
-        console.log(`Size of input file before compression: ${stats.input.size}`);
-        delete stats.input;
-
-        for (const algorithm of Object.keys(stats)) {
-            const { compressionTime, size } = stats[algorithm];
-            results.push({ algorithm, compressionTime, size });
-        }
-
-        console.table(results);
-        process.exit(0)
-    }
+    console.table(results);
+    process.exit(0);
+  }
 }
 
 function compress(algo, compressFn, inputStream) {
-    pipeline(
-        inputStream,
-        monitorSize("input"),
-        startTimer(algo),
-        compressFn(),
-        endTimer(algo),
-        monitorSize(algo),
-        done
-    );
+  pipeline(
+    inputStream,
+    monitorSize("input"),
+    startTimer(algo),
+    compressFn(),
+    endTimer(algo),
+    monitorSize(algo),
+    done,
+  );
 }
 
 // accept optional argument to create output file
 function main() {
-    const file = process.argv[2];
+  const file = process.argv[2];
 
-    if (!file) {
-        console.log('No file was provided as argument');
-        process.exit(1);
-    }
+  if (!file) {
+    console.log("No file was provided as argument");
+    process.exit(1);
+  }
 
-    const currentDir = dirname(fileURLToPath(import.meta.url));
-    const inputDir = join(currentDir, "../input_files");
-    const inputFile = join(inputDir, file);
-    const inputStream = createReadStream(inputFile);
+  const currentDir = dirname(fileURLToPath(import.meta.url));
+  const inputDir = join(currentDir, "../input_files");
+  const inputFile = join(inputDir, file);
+  const inputStream = createReadStream(inputFile);
 
-    compress("gzip", createGzip, inputStream);
-    compress("deflate", createDeflate, inputStream);
-    compress("brotli", createBrotliCompress, inputStream);
+  compress("gzip", createGzip, inputStream);
+  compress("deflate", createDeflate, inputStream);
+  compress("brotli", createBrotliCompress, inputStream);
 }
 
 main();

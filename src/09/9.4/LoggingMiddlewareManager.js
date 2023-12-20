@@ -1,22 +1,22 @@
 export class LoggingMiddlewareManager {
-    constructor() {
-        this.middlewares = [];
-    }
+  constructor() {
+    this.middlewares = [];
+  }
 
-    use(middleware) {
-        this.middlewares.push(middleware);
-    }
+  use(middleware) {
+    this.middlewares.push(middleware);
+  }
 
-    log(msg) {
-        this.executeMiddlewares(msg);
-    }
+  log(msg) {
+    this.executeMiddlewares(msg);
+  }
 
-    async executeMiddlewares(initialMessage) {
-        let message = initialMessage;
-        for await (const middlewareFunc of this.middlewares) {
-            console.log(message);
-            message = await middlewareFunc(this, message);
-        }
-        return message;
+  async executeMiddlewares(initialMessage) {
+    let message = initialMessage;
+    for await (const middlewareFunc of this.middlewares) {
+      console.log(message);
+      message = await middlewareFunc(this, message);
     }
+    return message;
+  }
 }

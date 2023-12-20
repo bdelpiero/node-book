@@ -9,9 +9,11 @@ export function addPreInitQueue(target, methods, eventName) {
   let commandsQueue = [];
 
   target.once(eventName, () => {
-    console.log(`Initialization event ${eventName} received. Running queued commands...`);
+    console.log(
+      `Initialization event ${eventName} received. Running queued commands...`,
+    );
     initialized = true;
-    commandsQueue.forEach(command => command());
+    commandsQueue.forEach((command) => command());
     commandsQueue = [];
   });
 
@@ -22,7 +24,9 @@ export function addPreInitQueue(target, methods, eventName) {
       }
 
       return (...args) => {
-        console.log(`Call to ${property} queued with args ${JSON.stringify(args)}`);
+        console.log(
+          `Call to ${property} queued with args ${JSON.stringify(args)}`,
+        );
         return new Promise((resolve, reject) => {
           const command = () => {
             target[property](...args).then(resolve, reject);
