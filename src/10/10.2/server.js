@@ -1,7 +1,7 @@
 import { createServer } from "http";
 // import { totalSales } from './totalSales.js'
-import { totalSales } from "./totalSalesBatch.js";
-// import { totalSales } from './totalSalesCache.js'
+// import { totalSales } from "./totalSalesBatch.js";
+import { totalSales } from "./totalSalesCache.js";
 
 createServer((req, res) => {
   if (!req.url) {

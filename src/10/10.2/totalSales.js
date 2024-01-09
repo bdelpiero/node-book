@@ -1,5 +1,4 @@
 import level from "level";
-import { EventEmitter } from "events";
 import sublevel from "subleveldown";
 
 const db = level("example-db");

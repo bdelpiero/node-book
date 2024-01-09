@@ -5,7 +5,6 @@ import { totalSales as totalSalesRaw } from "./totalSales.js";
 const runningRequests = new Map();
 
 /**
- * TODO: make it reusable
  * @param {object} product
  * @param {Function} cb
  * @returns
