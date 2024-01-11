@@ -1,6 +1,12 @@
 import { EventEmitter } from "events";
 import { totalSales as totalSalesRaw } from "./totalSales.js";
 
+//! WAY more elegant solution: https://github.com/levanchien/Node.js-Design-Patterns-Exercise/blob/master/chap-11/11.2-batching-and-caching-callback/totalSalesBatch.js
+// he uses a queue that holds the cb for each call as the value for the map ({product: [cb queue]})
+// once totalSalesRaw is done, it iterates thought the queue
+
+// Another good solution would have been to return the stream directly to the function's client (instead of using cbs to propagate result)
+
 // holds instances of EventEmitter as values
 const runningRequests = new Map();
 
